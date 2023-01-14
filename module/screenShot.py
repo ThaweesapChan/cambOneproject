@@ -1,6 +1,7 @@
 import pyautogui
 import time
 import cv2
+import numpy as np
 
 def screenShotLR():
     start_time = time.perf_counter()
@@ -61,5 +62,31 @@ def clickObject(object_img, img):
     else:
         print('Object not found')
 
+def countObject(object_img, img):
+    start_time = time.perf_counter()
+    # Load the object and search images
+    object_img = cv2.imread(object_img)
+    search_img = cv2.imread(img)
+
+    # Convert the images to grayscale
+    object_gray = cv2.cvtColor(object_img, cv2.COLOR_BGR2GRAY)
+    search_gray = cv2.cvtColor(search_img, cv2.COLOR_BGR2GRAY)
+
+    # Use the matchTemplate function to find the object in the search image
+    result = cv2.matchTemplate(search_gray, object_gray, cv2.TM_CCOEFF_NORMED)
+
+    # Use the threshold function to filter out weak matches
+    threshold = 0.8
+    loc = np.where(result >= threshold)
+
+    # Count the number of matches found
+    object_count = len(loc[0])
+
+    end_time = time.perf_counter()
+    print("\ncountObject\nTime taken: ", end_time - start_time)
+
+    print(object_count)
+    return object_count
+
 screenShotLR()
-clickObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/th.png","/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
+countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/th.png","/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
