@@ -2,9 +2,27 @@ import pyautogui
 import time
 import cv2
 import numpy as np
+from time import sleep as sleep
+
+def readTemplate():
+    start_time = time.perf_counter()
+    global buttonCheck, buttonNext, buttonNextAct, pageLineMagentaDark, pageLineMagentaLight, pageLineMagentaNon
+
+    # อ่านรูปภาพ template ทั้งหมด
+    buttonCheck             = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonCheck.png")
+    buttonNext              = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNext.png")
+    buttonNextAct           = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNextAct.png")
+    pageLineMagentaDark     = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaDark.png")
+    pageLineMagentaLight    = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaLight.png")
+    pageLineMagentaNon      = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaNon.png")
+
+    end_time = time.perf_counter()
+    print("\nreadTemplate \nTime taken: ", end_time - start_time)
 
 def screenShotLR():
+
     start_time = time.perf_counter()
+    global pageLeft,pageRight
 
     # Get the size of the screen
     screen_width, screen_height = pyautogui.size()
@@ -15,23 +33,21 @@ def screenShotLR():
     # Take a screenshot of the right side of the screen and save it to a file
     pyautogui.screenshot("/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png", region=(screen_width / 2, 0, screen_width / 2, screen_height))
 
+    # อ่านภาพ screenShot ทั้งซ้ายขวา และประการเป็นตัวแปร global
+    pageLeft    = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageLeft.png")
+    pageRight   = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
+
     end_time = time.perf_counter()
     print("\nscreenShotLR \nTime taken: ", end_time - start_time)
 
-
-def clickObject(object_img, img):
+def clickObject(object_img, img, strSide):
     start_time = time.perf_counter()
 
     # Get the size of the screen
     screen_width, screen_height = pyautogui.size()
 
-    # Load the object image and the screenshot image
-
-    object_image = cv2.imread(object_img)
-    screenshot = cv2.imread(img)
-
     # Use cv2.matchTemplate to search for the object in the screenshot
-    result = cv2.matchTemplate(screenshot, object_image, cv2.TM_CCOEFF_NORMED)
+    result = cv2.matchTemplate(img, object_img, cv2.TM_CCOEFF_NORMED)
 
     # Use cv2.minMaxLoc to find the coordinates of the best match
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
@@ -42,19 +58,21 @@ def clickObject(object_img, img):
 
     if max_val > 0.8:
         # Calculate the coordinates of the center of the object
-        object_height, object_width = object_image.shape[:2]
+        object_height, object_width = object_img.shape[:2]
         x, y = max_loc
 
-        if img == "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png":
+        if strSide == "pageRight":
             center_x = x + (screen_width/2) + object_width /2
             center_y = y + object_height / 2
+            print("if")
 
         else:
             center_x = x + object_width / 2
             center_y = y + object_height / 2
+            print("else")
 
         # Click on the center of the object
-        pyautogui.click(center_x, center_y)
+        pyautogui.doubleClick(center_x, center_y)
 
         # เวลาที่ fuctions ใช้
 
@@ -63,30 +81,59 @@ def clickObject(object_img, img):
         print('Object not found')
 
 def countObject(object_img, img):
-    start_time = time.perf_counter()
-    # Load the object and search images
-    object_img = cv2.imread(object_img)
-    search_img = cv2.imread(img)
+    # Load the object image and the screenshot image
+    screenshot = cv2.imread(img)
 
-    # Convert the images to grayscale
-    object_gray = cv2.cvtColor(object_img, cv2.COLOR_BGR2GRAY)
-    search_gray = cv2.cvtColor(search_img, cv2.COLOR_BGR2GRAY)
+    # Use cv2.matchTemplate to search for the object in the screenshot
+    result = cv2.matchTemplate(screenshot, object_img, cv2.TM_CCOEFF_NORMED)
 
-    # Use the matchTemplate function to find the object in the search image
-    result = cv2.matchTemplate(search_gray, object_gray, cv2.TM_CCOEFF_NORMED)
-
-    # Use the threshold function to filter out weak matches
-    threshold = 0.8
+    # Use cv2.threshold to set a threshold for a good match
+    threshold = 0.99
     loc = np.where(result >= threshold)
 
-    # Count the number of matches found
-    object_count = len(loc[0])
+    # Count the number of occurrences of the object
+    count = 0
+    for pt in zip(*loc[::-1]):
+        count += 1
+    print(count)
+    return count
+
+def pagePresentation():
+    start_time = time.perf_counter()
+    screenShotLR()
+    leftPLM_non     = countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaNon.png",
+                                  "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageLeft.png")
+    leftPLM_Light   = countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaLight.png",
+                                  "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageLeft.png")
+    leftPLM_Dark    = countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaDark.png",
+                                  "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageLeft.png")
+
+    rightPLM_non    = countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaNon.png",
+                                  "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
+    rightPLM_Light   = countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaLight.png",
+                                  "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
+    rightPLM_Dark    = countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaDark.png",
+                                  "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
+
+    sumLeft  = leftPLM_non + leftPLM_Light + leftPLM_Dark
+    sumRight = rightPLM_non + rightPLM_Light + rightPLM_Dark
+
+    if sumLeft == sumRight :
+        clickObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNext.png",
+                    "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageLeft.png")
+        sleep(0.2)
+        clickObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNext.png",
+                    "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
+        sleep(0.2)
+        clickObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNextAct.png",
+                    "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageLeft.png")
+        sleep(0.2)
+        clickObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNextAct.png",
+                    "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
 
     end_time = time.perf_counter()
-    print("\ncountObject\nTime taken: ", end_time - start_time)
+    print("\nclickObject \nTime taken: ", end_time - start_time)
 
-    print(object_count)
-    return object_count
-
+readTemplate()
 screenShotLR()
-countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/th.png","/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
+clickObject(buttonNext,pageRight,"pageRight")
