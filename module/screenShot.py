@@ -6,12 +6,19 @@ from time import sleep as sleep
 
 def readTemplate():
     start_time = time.perf_counter()
-    global buttonCheck, buttonNext, buttonNextAct, pageLineMagentaDark, pageLineMagentaLight, pageLineMagentaNon
+    global buttonCheck,buttonCorrectChoice,ButtonCycle, buttonNext, buttonNextAct,buttonNextActMagenta,buttonTriangle,\
+        pageLineGreenDark,pageLineGreenNon, pageLineMagentaDark, pageLineMagentaLight, pageLineMagentaNon
 
     # อ่านรูปภาพ template ทั้งหมด
     buttonCheck             = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonCheck.png")
+    buttonCorrectChoice     = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonCorrectChoice.png")
+    ButtonCycle             = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/ButtonCycle.png")
     buttonNext              = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNext.png")
     buttonNextAct           = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNextAct.png")
+    buttonNextActMagenta    = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNextActMagenta.png")
+    buttonTriangle          = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonTriangle.png")
+    pageLineGreenDark       = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineGreenDark.png")
+    pageLineGreenNon        = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineGreenNon.png")
     pageLineMagentaDark     = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaDark.png")
     pageLineMagentaLight    = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaLight.png")
     pageLineMagentaNon      = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaNon.png")
@@ -64,12 +71,10 @@ def clickObject(object_img, img, strSide):
         if strSide == "pageRight":
             center_x = x + (screen_width/2) + object_width /2
             center_y = y + object_height / 2
-            print("if")
 
         else:
             center_x = x + object_width / 2
             center_y = y + object_height / 2
-            print("else")
 
         # Click on the center of the object
         pyautogui.doubleClick(center_x, center_y)
@@ -81,11 +86,9 @@ def clickObject(object_img, img, strSide):
         print('Object not found')
 
 def countObject(object_img, img):
-    # Load the object image and the screenshot image
-    screenshot = cv2.imread(img)
 
     # Use cv2.matchTemplate to search for the object in the screenshot
-    result = cv2.matchTemplate(screenshot, object_img, cv2.TM_CCOEFF_NORMED)
+    result = cv2.matchTemplate(img, object_img, cv2.TM_CCOEFF_NORMED)
 
     # Use cv2.threshold to set a threshold for a good match
     threshold = 0.99
@@ -101,39 +104,30 @@ def countObject(object_img, img):
 def pagePresentation():
     start_time = time.perf_counter()
     screenShotLR()
-    leftPLM_non     = countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaNon.png",
-                                  "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageLeft.png")
-    leftPLM_Light   = countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaLight.png",
-                                  "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageLeft.png")
-    leftPLM_Dark    = countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaDark.png",
-                                  "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageLeft.png")
 
-    rightPLM_non    = countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaNon.png",
-                                  "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
-    rightPLM_Light   = countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaLight.png",
-                                  "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
-    rightPLM_Dark    = countObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/pageLineMagentaDark.png",
-                                  "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
+    leftPLM_non     = countObject(pageLineMagentaNon,pageLeft)
+    leftPLM_Light   = countObject(pageLineMagentaLight,pageLeft)
+    leftPLM_Dark    = countObject(pageLineMagentaDark,pageLeft)
+    rightPLM_non    = countObject(pageLineMagentaNon,pageRight)
+    rightPLM_Light  = countObject(pageLineMagentaLight,pageRight)
+    rightPLM_Dark   = countObject(pageLineMagentaDark,pageRight)
 
     sumLeft  = leftPLM_non + leftPLM_Light + leftPLM_Dark
     sumRight = rightPLM_non + rightPLM_Light + rightPLM_Dark
 
-    if sumLeft == sumRight :
-        clickObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNext.png",
-                    "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageLeft.png")
-        sleep(0.2)
-        clickObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNext.png",
-                    "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
-        sleep(0.2)
-        clickObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNextAct.png",
-                    "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageLeft.png")
-        sleep(0.2)
-        clickObject("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNextAct.png",
-                    "/Users/thaweesap/CodingProject/cambOneProject/img/screenShot/pageRight.png")
+    print(sumLeft,sumRight)
+    if sumLeft + sumRight != 0 :
+        clickObject(buttonNext,pageLeft,"pageLeft")
+        clickObject(buttonNext,pageRight,"pageRight")
+        clickObject(buttonNextAct, pageLeft, "pageLeft")
+        clickObject(buttonNextAct, pageRight, "pageRight")
+
 
     end_time = time.perf_counter()
     print("\nclickObject \nTime taken: ", end_time - start_time)
 
 readTemplate()
 screenShotLR()
-clickObject(buttonNext,pageRight,"pageRight")
+for i in range(30):
+    pagePresentation()
+    i += 1
