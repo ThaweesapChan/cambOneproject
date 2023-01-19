@@ -6,13 +6,13 @@ from time import sleep as sleep
 
 def readTemplate():
     start_time = time.perf_counter()
-    global buttonCheck,buttonCorrectChoice,ButtonCycle, buttonNext, buttonNextAct,buttonNextActMagenta,buttonTriangle,\
+    global buttonCheck,buttonCorrectChoice,buttonCycle, buttonNext, buttonNextAct,buttonNextActMagenta,buttonTriangle,\
         iconCorrect,pageLineGreenDark,pageLineGreenNon, pageLineMagentaDark, pageLineMagentaLight, pageLineMagentaNon
 
     # อ่านรูปภาพ template ทั้งหมด
     buttonCheck             = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonCheck.png")
     buttonCorrectChoice     = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonCorrectChoice.png")
-    ButtonCycle             = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/ButtonCycle.png")
+    buttonCycle             = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/ButtonCycle.png")
     buttonNext              = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNext.png")
     buttonNextAct           = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNextAct.png")
     buttonNextActMagenta    = cv2.imread("/Users/thaweesap/CodingProject/cambOneProject/img/template/buttonNextActMagenta.png")
@@ -72,12 +72,80 @@ def clickObject(object_img, img, strSide):
             center_y = y + object_height / 2
 
         # Click on the center of the object
+        pyautogui.click(center_x, center_y)
+
+        # เวลาที่ fuctions ใช้
+        end_time = time.perf_counter()
+
+        print('clickObject',"Time taken:", end_time - start_time)
+def clickDoubleObject(object_img, img, strSide):
+    start_time = time.perf_counter()
+
+    # Get the size of the screen
+    screen_width, screen_height = pyautogui.size()
+
+    # Use cv2.matchTemplate to search for the object in the screenshot
+    result = cv2.matchTemplate(img, object_img, cv2.TM_CCOEFF_NORMED)
+
+    # Use cv2.minMaxLoc to find the coordinates of the best match
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+    # If the best match is above a certain threshold, click on the center of the object
+
+    if max_val > 0.8:
+        # Calculate the coordinates of the center of the object
+        object_height, object_width = object_img.shape[:2]
+        x, y = max_loc
+
+        if strSide == "R":
+            center_x = x + (screen_width/2) + object_width /2
+            center_y = y + object_height / 2
+
+        else:
+            center_x = x + object_width / 2
+            center_y = y + object_height / 2
+
+        # Click on the center of the object
         pyautogui.doubleClick(center_x, center_y)
 
         # เวลาที่ fuctions ใช้
         end_time = time.perf_counter()
 
         print('clickObject',"Time taken:", end_time - start_time)
+def clickDoubleObject(object_img, img, strSide):
+    start_time = time.perf_counter()
+
+    # Get the size of the screen
+    screen_width, screen_height = pyautogui.size()
+
+    # Use cv2.matchTemplate to search for the object in the screenshot
+    result = cv2.matchTemplate(img, object_img, cv2.TM_CCOEFF_NORMED)
+
+    # Use cv2.minMaxLoc to find the coordinates of the best match
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+    # If the best match is above a certain threshold, click on the center of the object
+
+    if max_val > 0.8:
+        # Calculate the coordinates of the center of the object
+        object_height, object_width = object_img.shape[:2]
+        x, y = max_loc
+
+        if strSide == "R":
+            center_x = x + (screen_width / 2) + object_width / 2
+            center_y = y + object_height / 2
+
+        else:
+            center_x = x + object_width / 2
+            center_y = y + object_height / 2
+
+        # Click on the center of the object
+        pyautogui.click(center_x, center_y, click=3)
+
+        # เวลาที่ fuctions ใช้
+        end_time = time.perf_counter()
+
+        print('clickObject', "Time taken:", end_time - start_time)
 
 def countObject(object_img, img):
 
@@ -96,11 +164,11 @@ def countObject(object_img, img):
 
 def pagePresentation():
     start_time = time.perf_counter()
-    countloop = 0
-    print("\npagePresentation")
-    print("Loop...")
+    print("\npagePresentation\nLoop...")
     while True:
         screenShotLR()
+        clickObject(buttonNext, pageLeft, "L")
+        clickObject(buttonNext, pageRight, "R")
         leftPLM_non     = countObject(pageLineMagentaNon,pageLeft)
         leftPLM_Light   = countObject(pageLineMagentaLight,pageLeft)
         leftPLM_Dark    = countObject(pageLineMagentaDark,pageLeft)
@@ -113,54 +181,50 @@ def pagePresentation():
         sumRight = rightPLM_non + rightPLM_Light + rightPLM_Dark
 
         if sumLeft != 0:
-            clickObject(buttonNext, pageLeft, "L")
-            clickObject(buttonNextAct, pageLeft, "L")
+            clickDoubleObject(buttonNext, pageLeft, "L")
+            clickDoubleObject(buttonNextAct, pageLeft, "L")
 
         if sumRight != 0 :
-            clickObject(buttonNext,pageRight,"R")
-            clickObject(buttonNextAct, pageRight, "R")
+            clickDoubleObject(buttonNext,pageRight,"R")
+            clickDoubleObject(buttonNextAct, pageRight, "R")
 
-        if sumLeft +sumRight == 0:
+        if sumLeft + sumRight == 0:
+            print(sumLeft , sumRight)
             break
-
-    print("loopBreak")
     end_time = time.perf_counter()
-    print("Time taken: ", end_time - start_time)
+    print("loopBreak\nTime taken: ", end_time - start_time)
+    return True
 
-def pageCycle1choice():
+def pageCyclechoice():
     start_time = time.perf_counter()
-    screenShotLR()
-    leftPageLineGreenDark   = countObject(pageLineGreenDark,pageLeft)
-    leftPageLineGreenNon    = countObject(pageLineGreenNon,pageLeft)
-    rightPageLineGreenDark  = countObject(pageLineGreenDark,pageRight)
-    rightPageLineGreenNon   = countObject(pageLineGreenNon,pageRight)
-
-    sumLeft = leftPageLineGreenDark + leftPageLineGreenNon
-    sumRight = rightPageLineGreenDark + rightPageLineGreenNon
-
-    if sumLeft ==  sumRight :
-
-        clickObject(ButtonCycle,pageLeft,"L")
+    while True :
+        # screenShot หน้าจอ
+        screenShotLR()
+        clickObject(buttonCycle, pageLeft, "L")
         screenShotLR()
         clickObject(buttonCheck, pageLeft, "L")
-        countIconCorrect = countObject(iconCorrect,pageLeft)
+        screenShotLR()
 
-        if countIconCorrect > 0 :
+        #หากการตอบถูกต้องให้ตอบคำตอบเดิมกับภาพทางด้านขวาและออกจาก while loop
+        if countObject(iconCorrect,pageLeft) > 0 :
             clickObject(buttonCorrectChoice, pageLeft, "R")
             screenShotLR()
             clickObject(buttonCheck, pageRight, "R")
+            screenShotLR()
             clickObject(buttonNext, pageLeft, "L")
             clickObject(buttonNext, pageRight, "R")
-
+            break
         else:
-            clickObject(buttonNext, pageRight, "R")
-    clickObject(buttonNext, pageRight, "R")
+            break
+
     end_time = time.perf_counter()
     print("\nclickObject \nTime taken: ", end_time - start_time)
 
-
+def pageTriangleChoice():
+    pass
 
 readTemplate()
 screenShotLR()
-pagePresentation()
-
+while True:
+    pagePresentation()
+    pageCyclechoice()
